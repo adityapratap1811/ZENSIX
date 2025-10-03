@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .student-card {
+            transition: all 0.3s ease;
+        }
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .attendance-section {
+            transition: all 0.3s ease;
+        }
+        #cameraPreview {
+            transform: scaleX(-1); /* Mirror effect for camera */
+        }
+        .stats-card {
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        /* Mobile-first responsive adjustments */
+        @media (max-width: 640px) {
+            .mobile-stack {
+                flex-direction: column;
+            }
+            .mobile-full {
+                width: 100%;
+            }
+            .mobile-text-center {
+                text-align: center;
+            }
+            .mobile-p-4 {
+                padding: 1rem;
+            }
+            .mobile-mt-4 {
+                margin-top: 1rem;
+            }
+        }
+        
+        /* Tablet adjustments */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .tablet-grid-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navbar - Responsive -->
+    <nav class="bg-blue-600 text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center mobile-stack">
+            <h1 class="text-xl font-bold flex items-center mobile-text-center mobile-full md:w-auto">
+                <i class="fas fa-user-graduate mr-2"></i>
+                Student Attendance System
+            </h1>
+            <div class="flex items-center space-x-4 mobile-full md:w-auto justify-center mobile-mt-4 md:mt-0">
+                <span id="currentDate" class="text-sm"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Tabs - Responsive -->
+    <div class="container mx-auto px-4 pt-4">
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 bg-white rounded-lg p-1 shadow-md">
+            <button id="registrationTab" class="tab-button flex-1 py-2 px-4 rounded-lg font-medium active mobile-full">
+                <i class="fas fa-user-plus mr-2"></i>
+                <span class="hidden sm:inline">Student Registration</span>
+                <span class="sm:hidden">Registration</span>
+            </button>
+            <button id="attendanceTab" class="tab-button flex-1 py-2 px-4 rounded-lg font-medium mobile-full">
+                <i class="fas fa-camera mr-2"></i>
+                <span class="hidden sm:inline">Take Attendance</span>
+                <span class="sm:hidden">Attendance</span>
+            </button>
+            <button id="studentsTab" class="tab-button flex-1 py-2 px-4 rounded-lg font-medium mobile-full">
+                <i class="fas fa-users mr-2"></i>
+                <span class="hidden sm:inline">View Students</span>
+                <span class="sm:hidden">Students</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content - Responsive -->
+    <main class="container mx-auto p-4">
+        <!-- Registration Section -->
+        <section id="registrationSection" class="attendance-section bg-white rounded-xl shadow-md p-4 md:p-6 mb-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                <!-- Add Student Form -->
+                <div class="lg:col-span-1">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-user-plus text-blue-500 mr-2"></i>
+                        Add New Student
+                    </h2>
+                    <form id="studentForm" class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <input type="text" id="name" placeholder="Enter student name" 
+                                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="roll" class="block text-sm font-medium text-gray-700 mb-1">Roll Number</label>
+                            <input type="text" id="roll" placeholder="Enter roll number" 
+                                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="class" class="block text-sm font-medium text-gray-700 mb-1">Class</label>
+                            <input type="text" id="class" placeholder="Enter class/grade" 
+                                   class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <div>
+                            <label for="photo" class="block text-sm font-medium text-gray-700 mb-1">Student Photo</label>
+                            <input type="file" id="photo" accept="image/*" 
+                                   class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white p-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center">
+                            <i class="fas fa-user-plus mr-2"></i>
+                            Add Student
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Registered Students -->
+                <div class="lg:col-span-2">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center">
+                        <i class="fas fa-users text-purple-500 mr-2"></i>
+                        Registered Students
+                    </h2>
+                    
+                    <div id="studentsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Students will be displayed here -->
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyState" class="empty-state">
+                        <i class="fas fa-user-slash text-5xl mb-4 text-gray-300"></i>
+                        <p class="text-lg font-medium">No students registered yet</p>
+                        <p class="text-gray-500 mt-2">Add your first student using the form on the left</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Attendance Section -->
+        <section id="attendanceSection" class="attendance-section bg-white rounded-xl shadow-md p-4 md:p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold mb-4 md:mb-6 flex items-center">
+                <i class="fas fa-camera text-green-500 mr-2"></i>
+                Take Attendance Automatically
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                <!-- Camera Section -->
+                <div class="space-y-4">
+                    <div class="bg-gray-100 rounded-xl p-4">
+                        <h3 class="font-medium mb-2">Step 1: Capture Student Photo</h3>
+                        <div class="flex flex-col items-center">
+                            <div class="relative w-full max-w-md h-48 sm:h-64 bg-black rounded-lg overflow-hidden mb-4">
+                                <video id="cameraPreview" autoplay playsinline class="w-full h-full object-cover"></video>
+                                <canvas id="photoCanvas" class="hidden"></canvas>
+                            </div>
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full max-w-md">
+                                <button id="startCamera" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex-1">
+                                    <i class="fas fa-camera mr-2"></i>Start Camera
+                                </button>
+                                <button id="capturePhoto" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex-1">
+                                    <i class="fas fa-camera-retro mr-2"></i>Capture
+                                </button>
+                                <button id="uploadPhoto" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex-1">
+                                    <i class="fas fa-upload mr-2"></i>Upload
+                                </button>
+                            </div>
+                            <input type="file" id="photoUpload" accept="image/*" class="hidden">
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-100 rounded-xl p-4">
+                        <h3 class="font-medium mb-2">Step 2: Mark Attendance</h3>
+                        <div class="flex flex-col items-center">
+                            <div id="capturedPhotoContainer" class="hidden mb-4">
+                                <p class="text-sm text-gray-600 mb-2">Captured Photo:</p>
+                                <img id="capturedPhoto" class="w-32 h-32 sm:w-48 sm:h-48 object-cover rounded-lg border-2 border-blue-500">
+                            </div>
+                            <button id="markAttendanceBtn" class="bg-green-600 text-white px-4 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors w-full max-w-md">
+                                <i class="fas fa-check-circle mr-2"></i>Mark Attendance Automatically
+                            </button>
+                            <p class="text-sm text-gray-600 mt-2 text-center">The system will compare the captured photo with registered students and mark attendance automatically.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Results Section -->
+                <div>
+                    <div class="bg-gray-100 rounded-xl p-4 h-full">
+                        <h3 class="font-medium mb-4">Attendance Results</h3>
+                        <div id="attendanceResults" class="space-y-4">
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-user-check text-4xl mb-2"></i>
+                                <p>No attendance taken yet</p>
+                                <p class="text-sm">Capture or upload a student photo to mark attendance</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- View Students Section -->
+        <section id="studentsSection" class="attendance-section bg-white rounded-xl shadow-md p-4 md:p-6 hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 md:mb-6 space-y-2 sm:space-y-0">
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-users text-purple-500 mr-2"></i>
+                    All Students & Attendance Records
+                </h2>
+                <div class="flex space-x-2 w-full sm:w-auto">
+                    <button id="markAllPresent" class="bg-green-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-600 transition-colors flex-1 sm:flex-none">
+                        <i class="fas fa-check mr-1"></i> Mark All Present
+                    </button>
+                    <button id="markAllAbsent" class="bg-red-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-red-600 transition-colors flex-1 sm:flex-none">
+                        <i class="fas fa-times mr-1"></i> Mark All Absent
+                    </button>
+                </div>
+            </div>
+            
+            <div id="studentsListSection" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Students will be displayed here -->
+            </div>
+            
+            <!-- Empty State -->
+            <div id="emptyStateStudents" class="empty-state">
+                <i class="fas fa-user-slash text-5xl mb-4 text-gray-300"></i>
+                <p class="text-lg font-medium">No students registered yet</p>
+                <p class="text-gray-500 mt-2">Add students in the registration section</p>
+            </div>
+        </section>
+
+        <!-- Attendance Stats - Responsive -->
+        <section class="bg-white rounded-xl shadow-md p-4 md:p-6 mt-6">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fas fa-chart-bar text-green-500 mr-2"></i>
+                Attendance Statistics
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                <div class="stats-card bg-blue-50 p-3 md:p-4 rounded-lg text-center">
+                    <p class="text-xl md:text-2xl font-bold text-blue-600" id="totalStudents">0</p>
+                    <p class="text-gray-600 text-sm md:text-base">Total Students</p>
+                </div>
+                <div class="stats-card bg-green-50 p-3 md:p-4 rounded-lg text-center">
+                    <p class="text-xl md:text-2xl font-bold text-green-600" id="presentToday">0</p>
+                    <p class="text-gray-600 text-sm md:text-base">Present Today</p>
+                </div>
+                <div class="stats-card bg-red-50 p-3 md:p-4 rounded-lg text-center">
+                    <p class="text-xl md:text-2xl font-bold text-red-600" id="absentToday">0</p>
+                    <p class="text-gray-600 text-sm md:text-base">Absent Today</p>
+                </div>
+                <div class="stats-card bg-purple-50 p-3 md:p-4 rounded-lg text-center">
+                    <p class="text-xl md:text-2xl font-bold text-purple-600" id="attendanceRate">0%</p>
+                    <p class="text-gray-600 text-sm md:text-base">Attendance Rate</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-white rounded-xl shadow-lg p-4 md:p-6 max-w-md w-full mx-auto">
+            <div class="flex items-center mb-4">
+                <div class="bg-red-100 p-3 rounded-full mr-4">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold">Confirm Deletion</h3>
+            </div>
+            <p class="text-gray-600 mb-6">Are you sure you want to delete <span id="studentToDelete" class="font-semibold"></span>? This action cannot be undone.</p>
+            <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                <button id="cancelDelete" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors order-2 sm:order-1">
+                    Cancel
+                </button>
+                <button id="confirmDelete" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors order-1 sm:order-2">
+                    Delete Student
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize students array from localStorage or empty array
+        let students = JSON.parse(localStorage.getItem('students')) || [];
+        let studentToDeleteId = null;
+        let currentStream = null;
+        let capturedPhotoData = null;
+
+        // DOM Elements
+        const registrationTab = document.getElementById('registrationTab');
+        const attendanceTab = document.getElementById('attendanceTab');
+        const studentsTab = document.getElementById('studentsTab');
+        const registrationSection = document.getElementById('registrationSection');
+        const attendanceSection = document.getElementById('attendanceSection');
+        const studentsSection = document.getElementById('studentsSection');
+        
+        const studentForm = document.getElementById('studentForm');
+        const studentsList = document.getElementById('studentsList');
+        const emptyState = document.getElementById('emptyState');
+        const emptyStateStudents = document.getElementById('emptyStateStudents');
+        const deleteModal = document.getElementById('deleteModal');
+        const studentToDelete = document.getElementById('studentToDelete');
+        const cancelDelete = document.getElementById('cancelDelete');
+        const confirmDelete = document.getElementById('confirmDelete');
+        const markAllPresent = document.getElementById('markAllPresent');
+        const markAllAbsent = document.getElementById('markAllAbsent');
+        
+        // Camera elements
+        const startCamera = document.getElementById('startCamera');
+        const capturePhoto = document.getElementById('capturePhoto');
+        const uploadPhoto = document.getElementById('uploadPhoto');
+        const photoUpload = document.getElementById('photoUpload');
+        const cameraPreview = document.getElementById('cameraPreview');
+        const photoCanvas = document.getElementById('photoCanvas');
+        const capturedPhoto = document.getElementById('capturedPhoto');
+        const capturedPhotoContainer = document.getElementById('capturedPhotoContainer');
+        const markAttendanceBtn = document.getElementById('markAttendanceBtn');
+        const attendanceResults = document.getElementById('attendanceResults');
+        
+        // Stats elements
+        const totalStudents = document.getElementById('totalStudents');
+        const presentToday = document.getElementById('presentToday');
+        const absentToday = document.getElementById('absentToday');
+        const attendanceRate = document.getElementById('attendanceRate');
+        const currentDate = document.getElementById('currentDate');
+
+        // Set current date
+        const today = new Date();
+        currentDate.textContent = today.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+
+        // Tab switching
+        registrationTab.addEventListener('click', () => switchTab('registration'));
+        attendanceTab.addEventListener('click', () => switchTab('attendance'));
+        studentsTab.addEventListener('click', () => switchTab('students'));
+
+        function switchTab(tab) {
+            console.log('Switching to tab:', tab);
+            
+            // Update tab buttons
+            registrationTab.classList.remove('active');
+            attendanceTab.classList.remove('active');
+            studentsTab.classList.remove('active');
+            
+            // Hide all sections
+            registrationSection.classList.add('hidden');
+            attendanceSection.classList.add('hidden');
+            studentsSection.classList.add('hidden');
+            
+            // Show selected section and update tab
+            if (tab === 'registration') {
+                registrationSection.classList.remove('hidden');
+                registrationTab.classList.add('active');
+            } else if (tab === 'attendance') {
+                attendanceSection.classList.remove('hidden');
+                attendanceTab.classList.add('active');
+            } else if (tab === 'students') {
+                studentsSection.classList.remove('hidden');
+                studentsTab.classList.add('active');
+                renderStudentsInStudentsSection();
+            }
+        }
+
+        // Add Student
+        studentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const roll = document.getElementById('roll').value;
+            const studentClass = document.getElementById('class').value;
+            const photoInput = document.getElementById('photo');
+
+            // Check if roll number already exists
+            if (students.some(student => student.roll === roll)) {
+                alert('A student with this roll number already exists!');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function() {
+                const student = {
+                    id: Date.now().toString(),
+                    name,
+                    roll,
+                    class: studentClass,
+                    photo: reader.result,
+                    attendance: []
+                };
+                students.push(student);
+                localStorage.setItem('students', JSON.stringify(students));
+                renderStudents();
+                updateStats();
+                studentForm.reset();
+                
+                // Show success message
+                showNotification(`${name} has been added successfully!`, 'success');
+            };
+            reader.readAsDataURL(photoInput.files[0]);
+        });
+
+        // Render Students in Registration Section
+        function renderStudents() {
+            studentsList.innerHTML = '';
+            
+            if (students.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            
+            emptyState.classList.add('hidden');
+            
+            students.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card bg-gray-50 rounded-xl shadow p-3 md:p-4 fade-in';
+                
+                card.innerHTML = `
+                    <div class="flex items-start">
+                        <img src="${student.photo}" class="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg mr-3 md:mr-4">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-lg">${student.name}</h3>
+                            <p class="text-gray-600 text-sm">Roll No: ${student.roll}</p>
+                            <p class="text-gray-600 text-sm">Class: ${student.class}</p>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <button class="text-red-500 hover:text-red-700 transition-colors" onclick="openDeleteModal('${student.id}', '${student.name}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                studentsList.appendChild(card);
+            });
+        }
+
+        // Render Students in Students Section
+        function renderStudentsInStudentsSection() {
+            const studentsContainer = document.getElementById('studentsListSection');
+            studentsContainer.innerHTML = '';
+            
+            if (students.length === 0) {
+                emptyStateStudents.classList.remove('hidden');
+                return;
+            }
+            
+            emptyStateStudents.classList.add('hidden');
+            
+            students.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card bg-gray-50 rounded-xl shadow p-3 md:p-4 fade-in';
+                
+                // Check if student is present today
+                const todayStr = today.toISOString().split('T')[0];
+                const todayAttendance = student.attendance.find(a => a.date === todayStr);
+                const isPresent = todayAttendance ? todayAttendance.present : false;
+                
+                card.innerHTML = `
+                    <div class="flex items-start mb-3">
+                        <img src="${student.photo}" class="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg mr-3 md:mr-4">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-lg">${student.name}</h3>
+                            <p class="text-gray-600 text-sm">Roll No: ${student.roll}</p>
+                            <p class="text-gray-600 text-sm">Class: ${student.class}</p>
+                            <div class="mt-2">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium ${isPresent ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                    ${isPresent ? 'Present Today' : 'Absent Today'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end">
+                            <button class="text-red-500 hover:text-red-700 transition-colors mb-2" onclick="openDeleteModal('${student.id}', '${student.name}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="markAttendanceManual('${student.id}', true)" 
+                                class="flex-1 bg-green-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-600 transition-colors flex items-center justify-center ${isPresent ? 'opacity-50 cursor-not-allowed' : ''}" 
+                                ${isPresent ? 'disabled' : ''}>
+                            <i class="fas fa-check mr-1"></i> Present
+                        </button>
+                        <button onclick="markAttendanceManual('${student.id}', false)" 
+                                class="flex-1 bg-red-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-600 transition-colors flex items-center justify-center ${!isPresent ? 'opacity-50 cursor-not-allowed' : ''}" 
+                                ${!isPresent ? 'disabled' : ''}>
+                            <i class="fas fa-times mr-1"></i> Absent
+                        </button>
+                    </div>
+                `;
+                studentsContainer.appendChild(card);
+            });
+        }
+
+        // Mark attendance manually (from View Students section)
+        function markAttendanceManual(studentId, present) {
+            const todayStr = today.toISOString().split('T')[0];
+            
+            students = students.map(student => {
+                if (student.id === studentId) {
+                    // Remove any existing attendance for today
+                    const filteredAttendance = student.attendance.filter(a => a.date !== todayStr);
+                    
+                    // Add new attendance record
+                    return {
+                        ...student,
+                        attendance: [...filteredAttendance, { date: todayStr, present }]
+                    };
+                }
+                return student;
+            });
+            
+            localStorage.setItem('students', JSON.stringify(students));
+            renderStudentsInStudentsSection();
+            updateStats();
+            
+            const student = students.find(s => s.id === studentId);
+            showNotification(`${student.name} marked as ${present ? 'present' : 'absent'}`, present ? 'success' : 'warning');
+        }
+
+        // Mark all students present
+        markAllPresent.addEventListener('click', function() {
+            const todayStr = today.toISOString().split('T')[0];
+            
+            students = students.map(student => {
+                // Remove any existing attendance for today
+                const filteredAttendance = student.attendance.filter(a => a.date !== todayStr);
+                
+                // Add new attendance record
+                return {
+                    ...student,
+                    attendance: [...filteredAttendance, { date: todayStr, present: true }]
+                };
+            });
+            
+            localStorage.setItem('students', JSON.stringify(students));
+            renderStudentsInStudentsSection();
+            updateStats();
+            showNotification('All students marked as present', 'success');
+        });
+
+        // Mark all students absent
+        markAllAbsent.addEventListener('click', function() {
+            const todayStr = today.toISOString().split('T')[0];
+            
+            students = students.map(student => {
+                // Remove any existing attendance for today
+                const filteredAttendance = student.attendance.filter(a => a.date !== todayStr);
+                
+                // Add new attendance record
+                return {
+                    ...student,
+                    attendance: [...filteredAttendance, { date: todayStr, present: false }]
+                };
+            });
+            
+            localStorage.setItem('students', JSON.stringify(students));
+            renderStudentsInStudentsSection();
+            updateStats();
+            showNotification('All students marked as absent', 'warning');
+        });
+
+        // Camera functionality
+        startCamera.addEventListener('click', async function() {
+            try {
+                // Stop any existing stream
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // Request camera access
+                currentStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user' } 
+                });
+                
+                // Display camera stream
+                cameraPreview.srcObject = currentStream;
+                capturedPhotoContainer.classList.add('hidden');
+                capturedPhotoData = null;
+                
+                showNotification('Camera started successfully', 'success');
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                showNotification('Failed to access camera. Please check permissions.', 'error');
+            }
+        });
+
+        // Capture photo from camera
+        capturePhoto.addEventListener('click', function() {
+            if (!currentStream) {
+                showNotification('Please start the camera first', 'warning');
+                return;
+            }
+            
+            const context = photoCanvas.getContext('2d');
+            photoCanvas.width = cameraPreview.videoWidth;
+            photoCanvas.height = cameraPreview.videoHeight;
+            
+            // Draw current video frame to canvas
+            context.drawImage(cameraPreview, 0, 0, photoCanvas.width, photoCanvas.height);
+            
+            // Convert canvas to data URL
+            capturedPhotoData = photoCanvas.toDataURL('image/png');
+            capturedPhoto.src = capturedPhotoData;
+            capturedPhotoContainer.classList.remove('hidden');
+            
+            showNotification('Photo captured successfully', 'success');
+        });
+
+        // Upload photo
+        uploadPhoto.addEventListener('click', function() {
+            photoUpload.click();
+        });
+
+        photoUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    capturedPhotoData = event.target.result;
+                    capturedPhoto.src = capturedPhotoData;
+                    capturedPhotoContainer.classList.remove('hidden');
+                    showNotification('Photo uploaded successfully', 'success');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Mark attendance automatically
+        markAttendanceBtn.addEventListener('click', function() {
+            if (!capturedPhotoData) {
+                showNotification('Please capture or upload a photo first', 'warning');
+                return;
+            }
+            
+            // Simulate face recognition (in a real app, this would use a proper face recognition API)
+            const matchedStudent = simulateFaceRecognition(capturedPhotoData);
+            
+            if (matchedStudent) {
+                // Mark student as present
+                const todayStr = today.toISOString().split('T')[0];
+                
+                students = students.map(student => {
+                    if (student.id === matchedStudent.id) {
+                        // Remove any existing attendance for today
+                        const filteredAttendance = student.attendance.filter(a => a.date !== todayStr);
+                        
+                        // Add new attendance record
+                        return {
+                            ...student,
+                            attendance: [...filteredAttendance, { date: todayStr, present: true }]
+                        };
+                    }
+                    return student;
+                });
+                
+                localStorage.setItem('students', JSON.stringify(students));
+                updateStats();
+                
+                // Display result
+                attendanceResults.innerHTML = `
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-check-circle text-green-500 text-xl mr-2"></i>
+                            <h4 class="font-semibold text-green-800">Attendance Marked Successfully!</h4>
+                        </div>
+                        <div class="flex items-center">
+                            <img src="${matchedStudent.photo}" class="w-16 h-16 object-cover rounded-lg mr-4">
+                            <div>
+                                <p class="font-medium">${matchedStudent.name}</p>
+                                <p class="text-sm text-gray-600">Roll No: ${matchedStudent.roll} | Class: ${matchedStudent.class}</p>
+                                <p class="text-sm text-green-600 mt-1">Marked as present for today</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                showNotification(`Attendance marked for ${matchedStudent.name}`, 'success');
+            } else {
+                // No match found
+                attendanceResults.innerHTML = `
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 text-xl mr-2"></i>
+                            <h4 class="font-semibold text-yellow-800">No Match Found</h4>
+                        </div>
+                        <p class="text-yellow-700">The system could not recognize the student. Please ensure:</p>
+                        <ul class="list-disc list-inside text-sm text-yellow-700 mt-2 ml-2">
+                            <li>The photo is clear and well-lit</li>
+                            <li>The student is registered in the system</li>
+                            <li>The student is facing the camera directly</li>
+                        </ul>
+                    </div>
+                `;
+                
+                showNotification('No matching student found', 'warning');
+            }
+        });
+
+        // Simulate face recognition (in a real app, this would use a proper face recognition API)
+        function simulateFaceRecognition(photoData) {
+            // This is a simplified simulation
+            // In a real application, you would use a face recognition library or API
+            
+            // For demo purposes, we'll just pick a random student
+            if (students.length === 0) return null;
+            
+            // Add some randomness to simulate recognition failures
+            if (Math.random() < 0.3) return null; // 30% chance of no match
+            
+            // Return a random student
+            const randomIndex = Math.floor(Math.random() * students.length);
+            return students[randomIndex];
+        }
+
+        // Open delete confirmation modal
+        function openDeleteModal(studentId, studentName) {
+            studentToDeleteId = studentId;
+            studentToDelete.textContent = studentName;
+            deleteModal.classList.remove('hidden');
+        }
+
+        // Close delete modal
+        cancelDelete.addEventListener('click', function() {
+            deleteModal.classList.add('hidden');
+            studentToDeleteId = null;
+        });
+
+        // Confirm deletion
+        confirmDelete.addEventListener('click', function() {
+            if (studentToDeleteId) {
+                const studentName = students.find(s => s.id === studentToDeleteId).name;
+                students = students.filter(student => student.id !== studentToDeleteId);
+                localStorage.setItem('students', JSON.stringify(students));
+                renderStudents();
+                renderStudentsInStudentsSection();
+                updateStats();
+                deleteModal.classList.add('hidden');
+                studentToDeleteId = null;
+                
+                showNotification(`${studentName} has been deleted`, 'error');
+            }
+        });
+
+        // Update stats
+        function updateStats() {
+            const todayStr = today.toISOString().split('T')[0];
+            
+            // Count present and absent students
+            let presentCount = 0;
+            let absentCount = 0;
+            
+            students.forEach(student => {
+                const todayAttendance = student.attendance.find(a => a.date === todayStr);
+                if (todayAttendance) {
+                    if (todayAttendance.present) {
+                        presentCount++;
+                    } else {
+                        absentCount++;
+                    }
+                } else {
+                    absentCount++; // Count as absent if no attendance recorded
+                }
+            });
+            
+            totalStudents.textContent = students.length;
+            presentToday.textContent = presentCount;
+            absentToday.textContent = absentCount;
+            
+            // Calculate attendance rate
+            const rate = students.length > 0 ? Math.round((presentCount / students.length) * 100) : 0;
+            attendanceRate.textContent = `${rate}%`;
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            // Remove any existing notifications
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white z-50 flex items-center max-w-md fade-in`;
+            
+            // Set background color based on type
+            if (type === 'success') {
+                notification.classList.add('bg-green-500');
+            } else if (type === 'warning') {
+                notification.classList.add('bg-yellow-500');
+            } else if (type === 'error') {
+                notification.classList.add('bg-red-500');
+            } else {
+                notification.classList.add('bg-blue-500');
+            }
+            
+            // Set icon based on type
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+            if (type === 'error') icon = 'times-circle';
+            
+            notification.innerHTML = `
+                <i class="fas fa-${icon} mr-2"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 500);
+            }, 3000);
+        }
+
+        // Stop camera when leaving page
+        window.addEventListener('beforeunload', function() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // Initial render
+        renderStudents();
+        updateStats();
+    </script>
+</body>
+</html>
