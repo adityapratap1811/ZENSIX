@@ -1,4 +1,4 @@
-------------------------------------------------Automatic Student Attendance System---------------------------------------------------------------------------------
+------------------------------------------------Automatic Student Attendance System-------------------------------------------------------------------
 
 ->A responsive web application for managing student attendance with automatic photo recognition capabilities. Built with HTML, Tailwind CSS, and JavaScript.
 
@@ -52,7 +52,8 @@
 ->Frontend: HTML5, Tailwind CSS, JavaScript (ES6+)
 
 ->Icons: Font Awesome 6.4.0
-....................................................................................................................................................................
-Storage: Browser LocalStorage
 
-Responsive: Mobile-first CSS with Tailwind
+->Storage: Browser LocalStorage
+
+->Responsive: Mobile-first CSS with Tailwind
+..........................................................................................................................................................
